@@ -68,41 +68,54 @@ def refresh_cookie():
         raise Exception(ERROR_CODE)
 
 refresh_cookie()
-index = 1
-lastTime = int(time.time()) - 30
-while index <= READ_NUM:
-    data.pop('s')
-    data['b'] = random.choice(book)
-    data['c'] = random.choice(chapter)
-    thisTime = int(time.time())
-    data['ct'] = thisTime
-    data['rt'] = thisTime - lastTime
-    data['ts'] = int(thisTime * 1000) + random.randint(0, 1000)
-    data['rn'] = random.randint(0, 1000)
-    data['sg'] = hashlib.sha256(f"{data['ts']}{data['rn']}{KEY}".encode()).hexdigest()
-    data['s'] = cal_hash(encode_data(data))
+# ... (前面的import和函数定义保持不变)
 
-    logging.info(f"⏱️ 尝试第 {index} 次阅读...")
-    logging.info(f"📕 data: {data}")
-    response = requests.post(READ_URL, headers=headers, cookies=cookies, data=json.dumps(data, separators=(',', ':')))
-    resData = response.json()
-    logging.info(f"📕 response: {resData}")
+refresh_cookie()
+total_loops = 3  # 外层循环次数
 
-    if 'succ' in resData:
-        if 'synckey' in resData:
-            lastTime = thisTime
-            index += 1
-            time.sleep(30)
-            logging.info(f"✅ 阅读成功，阅读进度：{(index - 1) * 0.5} 分钟")
+for loop in range(1, total_loops + 1):
+    logging.info(f"🔄 开始第 {loop}/{total_loops} 轮阅读循环")
+    index = 1
+    lastTime = int(time.time()) - 30
+    
+    while index <= READ_NUM:
+        data.pop('s')
+        data['b'] = random.choice(book)
+        data['c'] = random.choice(chapter)
+        thisTime = int(time.time())
+        data['ct'] = thisTime
+        data['rt'] = thisTime - lastTime
+        data['ts'] = int(thisTime * 1000) + random.randint(0, 1000)
+        data['rn'] = random.randint(0, 1000)
+        data['sg'] = hashlib.sha256(f"{data['ts']}{data['rn']}{KEY}".encode()).hexdigest()
+        data['s'] = cal_hash(encode_data(data))
+
+        logging.info(f"⏱️ 第{loop}轮 - 尝试第 {index} 次阅读...")
+        logging.info(f"📕 data: {data}")
+        response = requests.post(READ_URL, headers=headers, cookies=cookies, data=json.dumps(data, separators=(',', ':')))
+        resData = response.json()
+        logging.info(f"📕 response: {resData}")
+
+        if 'succ' in resData:
+            if 'synckey' in resData:
+                lastTime = thisTime
+                index += 1
+                time.sleep(30)
+                logging.info(f"✅ 第{loop}轮 - 阅读成功，阅读进度：{(index - 1) * 0.5} 分钟")
+            else:
+                logging.warning("❌ 无synckey, 尝试修复...")
+                fix_no_synckey()
         else:
-            logging.warning("❌ 无synckey, 尝试修复...")
-            fix_no_synckey()
-    else:
-        logging.warning("❌ cookie 已过期，尝试刷新...")
-        refresh_cookie()
+            logging.warning("❌ cookie 已过期，尝试刷新...")
+            refresh_cookie()
+    
+    logging.info(f"🎉 第{loop}轮阅读完成！")
+    if loop < total_loops:
+        logging.info(f"⏳ 等待10秒开始下一轮...")
+        time.sleep(10)
 
-logging.info("🎉 阅读脚本已完成！")
+logging.info(f"🎉 全部 {total_loops} 轮阅读脚本已完成！")
 
 if PUSH_METHOD not in (None, ''):
     logging.info("⏱️ 开始推送...")
-    push(f"🎉 微信读书自动阅读完成！\n⏱️ 阅读时长：{(index - 1) * 0.5}分钟。", PUSH_METHOD)
+    push(f"🎉 微信读书自动阅读完成！\n⏱️ 共完成 {total_loops} 轮阅读，每轮时长：{READ_NUM * 0.5}分钟。", PUSH_METHOD)
