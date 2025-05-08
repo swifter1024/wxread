@@ -69,7 +69,7 @@ def refresh_cookie():
 
 refresh_cookie()
 index = 1
-lastTime = int(time.time()) - 30
+lastTime = int(time.time()) - 120
 while index <= READ_NUM:
     data.pop('s')
     data['b'] = random.choice(book)
@@ -92,8 +92,8 @@ while index <= READ_NUM:
         if 'synckey' in resData:
             lastTime = thisTime
             index += 1
-            time.sleep(30)
-            logging.info(f"✅ 阅读成功，阅读进度：{(index - 1) * 0.5} 分钟")
+            time.sleep(120)
+            logging.info(f"✅ 阅读成功，阅读进度：{(index - 1) * 2} 分钟")
         else:
             logging.warning("❌ 无synckey, 尝试修复...")
             fix_no_synckey()
@@ -106,4 +106,4 @@ logging.info("🎉 阅读脚本已完成！")
 
 if PUSH_METHOD not in (None, ''):
     logging.info("⏱️ 开始推送...")
-    push(f"🎉 微信读书自动阅读完成！\n⏱️ 阅读时长：{(index - 1) * 0.5}分钟。", PUSH_METHOD)
+    push(f"🎉 微信读书自动阅读完成！\n⏱️ 阅读时长：{(index - 1) * 2}分钟。", PUSH_METHOD)
