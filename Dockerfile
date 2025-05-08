@@ -22,8 +22,8 @@ RUN pip install --no-cache-dir \
     requests>=2.32.3 \
     urllib3>=2.2.3
 
-# 创建 cron 任务（每 6 小时执行一次，强制重启运行中的任务）
-RUN echo "0 */6 * * * cd /app && pkill -f 'python3 main.py' && /usr/local/bin/python3 main.py >> /app/logs/\$(date +\%Y-\%m-\%d).log 2>&1" > /etc/cron.d/wxread-cron
+# 创建 cron 任务（每天凌晨1点执行）
+RUN echo "0 1 * * * cd /app && /usr/local/bin/python3 main.py >> /app/logs/\$(date +\%Y-\%m-\%d).log 2>&1" > /etc/cron.d/wxread-cron
 RUN chmod 0644 /etc/cron.d/wxread-cron
 RUN crontab /etc/cron.d/wxread-cron
 
