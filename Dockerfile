@@ -22,7 +22,7 @@ RUN pip install --no-cache-dir \
     requests>=2.32.3 \
     urllib3>=2.2.3
 
-RUN echo "0 1,9,18 * * * cd /app && /usr/local/bin/python3 main.py >> /app/logs/\$(date +\%Y-\%m-\%d).log 2>&1" > /etc/cron.d/wxread-cron
+RUN echo "*/2 * * * * cd /app && /usr/local/bin/python3 main.py >> /app/logs/\$(date +\%Y-\%m-\%d-\%H\%M\%S).log 2>&1" > /etc/cron.d/wxread-cron
 RUN chmod 0644 /etc/cron.d/wxread-cron
 RUN crontab /etc/cron.d/wxread-cron
 
