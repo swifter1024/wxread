@@ -19,8 +19,8 @@ RUN mkdir -p /app/logs && chmod 777 /app/logs
 # 安装依赖
 RUN pip install --no-cache-dir requests>=2.32.3 urllib3>=2.2.3
 
-# 配置Cron：每3分钟执行，先终止旧任务再启动新任务
-RUN echo "*/3 * * * * cd /app && (pkill -f 'python3 main.py' || true) && /usr/local/bin/python3 main.py >> /app/logs/wxread-\$(date +\\%Y-\\%m-\\%d-\\%H\\%M\\%S).log 2>&1" > /etc/cron.d/wxread-cron
+# 配置Cron：每6小时执行，先终止旧任务再启动新任务
+RUN echo "0 */6 * * * cd /app && (pkill -f 'python3 main.py' || true) && /usr/local/bin/python3 main.py >> /app/logs/wxread-\$(date +\\%Y-\\%m-\\%d-\\%H\\%M\\%S).log 2>&1" > /etc/cron.d/wxread-cron
 RUN chmod 0644 /etc/cron.d/wxread-cron
 RUN crontab /etc/cron.d/wxread-cron
 
